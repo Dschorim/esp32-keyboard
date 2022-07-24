@@ -16,7 +16,7 @@ jobs:
       - name: Get ESP-IDF SDK and compile project
         run: |
           ls -la ../
-          git clone git@github.com:espressif/esp-idf.git
+          git clone https://github.com/espressif/esp-idf.git
           cd esp-idf
           git checkout release/v5.0
           ./install.sh
