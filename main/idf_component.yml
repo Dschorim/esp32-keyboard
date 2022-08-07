@@ -1,0 +1,11 @@
+version: "0.0.3" # Component version, required only for components pushed to the service
+dependencies:
+  # Required IDF version
+  idf:
+    version: ">=4.4"
+  # For components maintained by Espressif:
+  # Same as `espressif/component`
+  tinyusb:
+    git: https://github.com/iot-components/tinyusb.git
+    public: true
+  
