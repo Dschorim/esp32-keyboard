@@ -51,11 +51,11 @@ void app_main(void)
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 
     while (1) {
-        vTaskDelay(500 / portTICK_RATE_MS);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
         uint8_t _keycode[6] = { 0 };
 
-        ESP_LOGI(TAG, "pressing A");
-        _keycode[0] = HID_KEY_A;
+        ESP_LOGI(TAG, "pressing B");
+        _keycode[0] = HID_KEY_B;
 
         tinyusb_hid_keyboard_report(_keycode);
     }
