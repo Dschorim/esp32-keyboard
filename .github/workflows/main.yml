@@ -23,4 +23,4 @@ jobs:
           ./install.sh
           . ./export.sh
           cd ../esp32-keyboard
-          idf.py build
+          idf.py reconfigure build
