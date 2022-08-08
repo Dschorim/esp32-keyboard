@@ -18,8 +18,8 @@ jobs:
           cd ../
           git clone https://github.com/espressif/esp-idf.git
           cd esp-idf
-          git checkout release/v4.4
+          git checkout release/v5.0
           ./install.sh
           . ./export.sh
           cd ../esp32-keyboard
-          idf.py reconfigure build
+          idf.py build
