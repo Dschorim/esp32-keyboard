@@ -5,3 +5,12 @@ Whilst the ESP32-S2 also comes with native usb support, this firmware is specifi
 work with the ESP32-S2.
 
 The usb support is based on the [`tinyusb`](https://github.com/hathach/tinyusb) library.
+
+##TODO
+
+ - [ ] change scan rate
+ - [ ] add test with actual buttons
+ - [ ] add support for optical matrix
+ - [ ] add support for smart knob (https://github.com/scottbez1/smartknob)
+ - [ ] finalize optical keyboard support
+ - [ ] stonks
