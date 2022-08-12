@@ -7,6 +7,7 @@
 #include "tusb_hid.h"
 #include "class/hid/hid.h"
 #include "driver/gpio.h"
+#include "descriptors_control.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -17,6 +18,7 @@
 #include "led_strip.h"
 
 #include "config.h"
+#include "keyboard.h"
 
 #define TAG "HID"
 
@@ -24,6 +26,8 @@ static led_strip_handle_t led_strip;
 
 // keycodes in components/tinyusb/tinyusb/src/class/hid/hid.h
 #define MESSAGE "Ich kann schneller tippen als Du"
+
+// check tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, _keycode); for mod keys
 
 static void init_LED(void) {
     led_strip_config_t strip_config = {
@@ -38,7 +42,7 @@ static void init_LED(void) {
 static void drive_LED(void* arg) {
     while(!tud_hid_ready()) {
         for (int i=0; i<LED_NUM; i++) {
-            led_strip_set_pixel(led_strip, i, 0xFF, 0x00, 0x00);
+            led_strip_set_pixel(led_strip, i, 0x40, 0x00, 0x00);
         }
         led_strip_refresh(led_strip);
         vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -161,25 +165,30 @@ uint32_t char_to_keycode(char c) {
 }
 
 void send_message(char* message, int len) {
-    uint8_t _keycode[6] = { 0 };
     for (int i=0; i<len; i++) {
         if (is_upper(message[i])) {
-            _keycode[0] = char_to_keycode(to_lower(message[i]));
-            _keycode[1] = HID_KEY_SHIFT_LEFT;
+            press_key(HID_KEY_SHIFT_LEFT);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            press_key(char_to_keycode(to_lower(message[i])));
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            release_key(char_to_keycode(to_lower(message[i])));
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            release_key(HID_KEY_SHIFT_LEFT);
         } else {
-            _keycode[0] = char_to_keycode(message[i]);
-            _keycode[1] = 0;
+            press_key(char_to_keycode(message[i]));
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            release_key(char_to_keycode(message[i]));
         }
-        tinyusb_hid_keyboard_report(_keycode);
-        vTaskDelay(20 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
-    _keycode[0] = HID_KEY_CONTROL_LEFT;
-    _keycode[1] = HID_KEY_ENTER;
-    tinyusb_hid_keyboard_report(_keycode);
-    vTaskDelay(20 / portTICK_PERIOD_MS);
-    _keycode[0] = 0;
-    _keycode[1] = 0;
-    tinyusb_hid_keyboard_report(_keycode);
+    press_key(HID_KEY_CONTROL_LEFT);
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+    press_key(HID_KEY_ENTER);
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+    release_key(HID_KEY_ENTER);
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+    release_key(HID_KEY_CONTROL_LEFT);
+    
 }
 
 #if CONFIG_IDF_TARGET_ESP32S3
@@ -214,8 +223,9 @@ void app_main(void)
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             continue;
         }
-        // uint8_t _keycode[6] = { 0 };
+        uint8_t _keycode[6] = { 0 };
 
+        vTaskDelay(100 / portTICK_PERIOD_MS);
         send_message(MESSAGE, strlen(MESSAGE));
 
         // ESP_LOGI(TAG, "pressing B");

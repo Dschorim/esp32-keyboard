@@ -8,7 +8,7 @@
 #define LED_PIN     48
 #define LED_NUM     1
 #define PATTERN     PATTERN_STATIC
-#define PATTERN_COL 0x006F00
+#define PATTERN_COL 0x004000
 
 
 //*********** internal stuff ***************//
