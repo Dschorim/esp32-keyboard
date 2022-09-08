@@ -217,22 +217,37 @@ void app_main(void)
     TaskHandle_t xLedHandle = NULL;
     xTaskCreatePinnedToCore(drive_LED, "drive_LED", 3072, NULL, 1, &xLedHandle, 1);
 
+    gpio_set_direction(7, GPIO_MODE_OUTPUT);
+    gpio_set_direction(15, GPIO_MODE_OUTPUT);
+    gpio_set_direction(5, GPIO_MODE_INPUT);
+    // gpio_set_pull_mode(5, GPIO_PULLDOWN_ONLY);
+    gpio_set_direction(6, GPIO_MODE_INPUT);
+    // gpio_set_pull_mode(6, GPIO_PULLDOWN_ONLY);
+
+    int row = 0;
     while (1) {
-        if (!tud_hid_ready()) {
-            ESP_LOGI(TAG, "USB not ready");
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            continue;
+        // if (!tud_hid_ready()) {
+        //     ESP_LOGI(TAG, "USB not ready");
+        //     vTaskDelay(1000 / portTICK_PERIOD_MS);
+        //     continue;
+        // }
+
+        gpio_set_level(ROW_PINS[row], 1);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+
+        for (int i=0; i<COLUMN_COUNT; i++) {
+            ESP_LOGI(TAG, "key %d is %d", ROW_COUNT*row+i, gpio_get_level(COLUMN_PINS[i]));
+            // if (gpio_get_level(COLUMN_PINS[i])) {
+            //     press_key(KEYS[row][i]);
+            // } else {
+            //     release_key(KEYS[row][i]);
+            // }
         }
-        uint8_t _keycode[6] = { 0 };
+        gpio_set_level(ROW_PINS[row], 0);
+        
+        // increment row and reset if overflow
+        // if (++row >= ROW_COUNT) row = 0;
 
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-        send_message(MESSAGE, strlen(MESSAGE));
-
-        // ESP_LOGI(TAG, "pressing B");
-        // _keycode[0] = HID_KEY_B;
-
-        // tinyusb_hid_keyboard_report(_keycode);
-
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
