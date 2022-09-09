@@ -9,6 +9,8 @@
 #include "driver/gpio.h"
 #include "descriptors_control.h"
 
+#include "rom/ets_sys.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/queue.h"
@@ -34,7 +36,10 @@ static void init_LED(void) {
         .strip_gpio_num = LED_PIN,
         .max_leds = LED_NUM,
     };
-    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &led_strip));
+    led_strip_rmt_config_t rmt_config = {
+        .resolution_hz = 10 * 1000 * 1000, // 10MHz
+    };
+    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
     /* Set all LED off to clear all pixels */
     led_strip_clear(led_strip);
 }
@@ -226,28 +231,32 @@ void app_main(void)
 
     int row = 0;
     while (1) {
-        // if (!tud_hid_ready()) {
-        //     ESP_LOGI(TAG, "USB not ready");
-        //     vTaskDelay(1000 / portTICK_PERIOD_MS);
-        //     continue;
-        // }
+        if (!tud_hid_ready()) {
+            ESP_LOGI(TAG, "USB not ready");
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            continue;
+        }
 
         gpio_set_level(ROW_PINS[row], 1);
         vTaskDelay(10 / portTICK_PERIOD_MS);
+        // ets_delay_us(500);
 
         for (int i=0; i<COLUMN_COUNT; i++) {
-            ESP_LOGI(TAG, "key %d is %d", ROW_COUNT*row+i, gpio_get_level(COLUMN_PINS[i]));
-            // if (gpio_get_level(COLUMN_PINS[i])) {
-            //     press_key(KEYS[row][i]);
-            // } else {
-            //     release_key(KEYS[row][i]);
-            // }
+            // ESP_LOGI(TAG, "key %d is %d", ROW_COUNT*row+i, gpio_get_level(COLUMN_PINS[i]));
+            if (gpio_get_level(COLUMN_PINS[i])) {
+                press_key(KEYS[row][i]);
+            } else {
+                release_key(KEYS[row][i]);
+            }
         }
         gpio_set_level(ROW_PINS[row], 0);
         
+        
+        
         // increment row and reset if overflow
-        // if (++row >= ROW_COUNT) row = 0;
-
+        if (++row >= ROW_COUNT) row = 0;
         vTaskDelay(10 / portTICK_PERIOD_MS);
+
+        // vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }

@@ -8,4 +8,5 @@ dependencies:
   tinyusb:
     git: https://github.com/Dschorim/tinyusb-esp32.git
     public: true
+  espressif/led_strip: "^2.0.0"
   
